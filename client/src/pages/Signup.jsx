@@ -28,11 +28,11 @@ export default function Signup() {
 
       const data = await res.json();
 
-      if (data.success === false) {
-        setError(data.message);
-        setLoading(false);
-        return;
-      }
+      if (!res.ok) {  // ❌ Check HTTP status
+      setError(data.message || "Signup failed!");
+      setLoading(false);
+      return;
+    }
 
       // ✅ Clear error if success
       setError(null);
@@ -90,7 +90,7 @@ export default function Signup() {
 
       <div className="flex gap-2 justify-center mt-4">
         <p>Have an account?</p>
-        <Link to="/sign-in">
+        <Link to="/signin">
           <span className="text-blue-600 hover:underline cursor-pointer">
             Sign In
           </span>

@@ -21,15 +21,22 @@ export const signin = async (req, res, next) => {
       if (!user) {
          return res.status(404).json({ message: "User not found" });
       }
-      const isMatch = bcrypt.compareSync(password, user.password);
+      if (!user.password) {
+         return res.status(500).json({ message: "Password not set for this user" });
+      }
+
+      const isMatch = await bcrypt.compare(password, user.password); // async version
       if (!isMatch) {
          return res.status(401).json({ message: "Invalid credentials!" });
       }
+
       const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
-      const{password:pwd,...otherDetails}=user._doc;
-       res.cookie("access_token", token, {
-         httpOnly: true
-      }).status(200).json({ message: "User signed in successfully!", user: otherDetails });
+      const { password: pwd, ...otherDetails } = user._doc;
+
+      res.cookie("access_token", token, { httpOnly: true })
+         .status(200)
+         .json({ message: "User signed in successfully!", user: otherDetails });
+
    } catch (error) {
       next(error);
    }
