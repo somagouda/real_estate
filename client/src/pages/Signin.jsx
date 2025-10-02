@@ -1,12 +1,13 @@
-
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { signInStart, signInSuccess, signInFailure } from "../redux/user/user.Slice";
 
 export default function Signin() {
   const [formData, setFormData] = React.useState({});
-  const [error, setError] = React.useState(null);
-  const [loading, setLoading] = React.useState(false);
-  const navigate = useNavigate(); // ✅ for redirection
+  const { loading, error } = useSelector((state) => state.user); // ✅ from Redux
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const handleChange = (e) => {
     setFormData({
@@ -17,9 +18,9 @@ export default function Signin() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
 
     try {
+      dispatch(signInStart()); // ✅ set loading true
       const res = await fetch("/api/auth/signin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -27,25 +28,17 @@ export default function Signin() {
       });
 
       const data = await res.json();
-      if (!res.ok) {  // ❌ Check HTTP status
-      setError(data.message || "Invalid credentials!");
-      setLoading(false);
-      return;
-    } 
-      
 
-      // ✅ Clear error if success
-      setError(null);
-      setLoading(false);
+      if (!res.ok) {
+        dispatch(signInFailure(data.message || "Invalid credentials!"));
+        return;
+      }
 
-       alert("Signin Successful!  Welcome back.");
-
-    // ✅ redirect  to home page
-    navigate("/");
-
+      dispatch(signInSuccess(data.user)); // ✅ save user in Redux
+      alert("Signin Successful!  Welcome back.");
+      navigate("/"); // ✅ redirect
     } catch (err) {
-      setError("Something went wrong. Please try again.");
-      setLoading(false);
+      dispatch(signInFailure("Something went wrong!"));
     }
   };
 
@@ -56,7 +49,6 @@ export default function Signin() {
         className="flex flex-col max-w-md mx-auto mt-8"
         onSubmit={handleSubmit}
       >
-        
         <input
           type="email"
           placeholder="Email"
@@ -92,5 +84,4 @@ export default function Signin() {
       </div>
     </div>
   );
-
 }
