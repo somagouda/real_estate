@@ -11,6 +11,9 @@ const userSchema=new mongoose.Schema({
     password:{type:String,
     required:true,
 },
+    avatar:{type:String,
+    default:"https://thumbs.dreamstime.com/b/handsome-real-estate-agent-holding-banner-house-sale-house-land-insurance-man-real-estate-agent-business-suit-276191193.jpg",
+},
 },
 {timestamps:true},
 );

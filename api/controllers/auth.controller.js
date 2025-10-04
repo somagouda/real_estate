@@ -41,3 +41,50 @@ export const signin = async (req, res, next) => {
       next(error);
    }
 };
+export const google = async (req, res, next) => {
+  try {
+    const { email, name, picture } = req.body;
+    if (!email || !name) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    let user = await User.findOne({ email });
+
+    if (user) {
+      // Existing user -> sign in
+      const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
+      const { password, ...otherDetails } = user._doc;
+
+      return res
+        .cookie("access_token", token, { httpOnly: true })
+        .status(200)
+        .json({ message: "User signed in successfully!", user: otherDetails });
+    } else {
+      // New user -> create
+      const generatedPassword = Math.random().toString(36).slice(-8);
+      const hashedPassword = bcrypt.hashSync(generatedPassword, 10);
+
+      const newUser = new User({
+        username:
+          name.split(" ").join("").toLowerCase() +
+          Math.random().toString(36).slice(-4),
+        email,
+        password: hashedPassword,
+        avatar: picture,
+      });
+
+      await newUser.save();
+
+      const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET);
+      const { password, ...userData } = newUser._doc;
+
+      return res
+        .cookie("access_token", token, { httpOnly: true })
+        .status(200)
+        .json({ message: "User created successfully!", user: userData });
+    }
+  } catch (error) {
+    console.error("Google auth error:", error);
+    next(error);
+  }
+};

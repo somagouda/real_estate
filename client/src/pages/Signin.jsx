@@ -2,6 +2,7 @@ import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { signInStart, signInSuccess, signInFailure } from "../redux/user/user.Slice";
+import OAuth from "../components/OAuth";
 
 export default function Signin() {
   const [formData, setFormData] = React.useState({});
@@ -70,6 +71,7 @@ export default function Signin() {
         >
           {loading ? "Signing In..." : "Sign In"}
         </button>
+        <OAuth />
       </form>
 
       {error && <p className="text-red-500 text-center mt-2">{error}</p>}
